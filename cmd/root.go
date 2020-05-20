@@ -1,16 +1,26 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
+	"os/user"
+	"path"
+
+	"github.com/greganswer/workflow/file"
+
+	"github.com/greganswer/workflow/git"
 
 	"github.com/spf13/cobra"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	globalConfigFile string
+	currentUser      *user.User
+	globalConfig     *viper.Viper
+	localConfig      *viper.Viper
+	configFilename   = ".workflow.yml"
+	configFileType   = "yaml"
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -22,42 +32,36 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	failIfError(rootCmd.Execute())
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	var err error
+	currentUser, err = user.Current()
+	failIfError(err)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.workflow.yaml)")
-
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	cobra.OnInitialize(initGlobalConfig, initLocalConfig)
 }
 
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+// Create the global config file.
+// TODO: DRY these 2 functions up.
+func initGlobalConfig() {
+	globalConfig = viper.New()
+	globalConfig.SetConfigName(configFilename)
+	globalConfig.SetConfigType(configFileType)
+	configFilePath := path.Join(currentUser.HomeDir, configFilename)
+	globalConfig.SetConfigFile(configFilePath)
+	file.Touch(configFilePath)
+	failIfError(globalConfig.ReadInConfig())
+}
 
-		// Search config in home directory with name ".workflow" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".workflow")
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
+// Create the local config file.
+func initLocalConfig() {
+	localConfig = viper.New()
+	localConfig.SetConfigName(configFilename)
+	globalConfig.SetConfigType(configFileType)
+	configFilePath := path.Join(git.RootDir(), configFilename)
+	localConfig.SetConfigFile(configFilePath)
+	file.Touch(configFilePath)
+	failIfError(localConfig.ReadInConfig())
 }
