@@ -3,6 +3,12 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/davecgh/go-spew/spew"
+
+	"github.com/greganswer/workflow/issues"
+
+	"github.com/spf13/viper"
+
 	"github.com/greganswer/workflow/jira"
 
 	"github.com/spf13/cobra"
@@ -21,49 +27,25 @@ func init() {
 
 // TODO: On app initialize, validate all Config info
 func runStartCmd(cmd *cobra.Command, args []string) {
-	j, err := jira.NewConfig(globalConfig, localConfig)
-	failIfError(err)
-	// jira.Config{
-	// 		Username string
-	// 		Token string
-	// 		APIURL string
-	// }
-
-	issue, err := issues.FromJira(args[0], j) // FromJira(ID string, j jira.Config)
+	j := newJiraConfig(globalConfig, localConfig)
+	issue, err := issues.NewFromJira(args[0], j)
 	failIfError(err)
 
-	// Issue URL is created like this:
-	// 		fmt.Sprintf(jira.IssueURLFormat, j.APIURL, ID)
-	// And stored in the Issue struct below:
-	// Issue {
-	// 		ID string
-	// 		Title string
-	// 		Type string
-	//		APIURL string
-	// 		WebURL string
-	// }
-
-	issue.BranchName()
-	// TODO: Create some kind of validator.
-	// if err, ask user to enter a shorter title or blank
-
-	issue.URL
-
-	jiraToken := getJiraToken()
-	jiraAPIURL := getJiraAPIURL()
-	jira.Username()
-	jira.Token()
-	issueURL := fmt.Sprintf("%s/rest/api/3/issue/%s", jira.API(), args[0])
-
-	// Then the Jira ticket is opened
-	getJSON(issueURL)
-	// And the ticket type is copied
-	// And the ticket ID is copied
+	spew.Dump(issue.BranchName())
 
 	// TODO: Handle un-staged changes
 	// Then the develop branch is checked out
 	// And a new branch is created using the ticket type and ID
 
+}
+
+func newJiraConfig(global *viper.Viper, local *viper.Viper) jira.Config {
+	return jira.Config{
+		Username: global.GetString(jira.UsernameConfigKey),
+		Token:    global.GetString(jira.TokenConfigKey),
+		APIURL:   local.GetString(jira.APIConfigKey),
+		WebURL:   local.GetString(jira.WebConfigKey),
+	}
 }
 
 // Inform the user that a Jira token is required

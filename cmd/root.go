@@ -14,12 +14,11 @@ import (
 )
 
 var (
-	globalConfigFile string
-	currentUser      *user.User
-	globalConfig     *viper.Viper
-	localConfig      *viper.Viper
-	configFilename   = ".workflow.yml"
-	configFileType   = "yaml"
+	currentUser    *user.User
+	globalConfig   *viper.Viper
+	localConfig    *viper.Viper
+	configFilename = ".workflow.yml"
+	configFileType = "yaml"
 )
 
 // rootCmd represents the base command when called without any subcommands
