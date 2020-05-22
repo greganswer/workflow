@@ -15,6 +15,11 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
+func title(s string) {
+	c := color.New(color.FgMagenta, color.Bold)
+	c.Println(s)
+}
+
 func confirm(label string) bool {
 	prompt := promptui.Prompt{
 		Label:     label,

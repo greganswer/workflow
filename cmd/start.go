@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/davecgh/go-spew/spew"
+	"github.com/fatih/color"
 
 	"github.com/greganswer/workflow/issues"
 
@@ -31,7 +31,7 @@ func runStartCmd(cmd *cobra.Command, args []string) {
 	issue, err := issues.NewFromJira(args[0], j)
 	failIfError(err)
 
-	spew.Dump(issue.BranchName())
+	ticketAndBranchInfo(issue, "develop")
 
 	// TODO: Handle un-staged changes
 	// Then the develop branch is checked out
@@ -87,4 +87,20 @@ func getJiraAPIURL() string {
 		failIfError(globalConfig.WriteConfig())
 	}
 	return URL
+}
+
+func ticketAndBranchInfo(i issues.Issue, parent string) {
+	cyan := color.New(color.FgHiCyan).SprintFunc()
+	fmt.Println()
+
+	title("  Ticket:")
+	fmt.Println(cyan("    ID:"), i.ID)
+	fmt.Println(cyan("    Title:"), i.Title)
+	fmt.Println(cyan("    Type:"), i.Type)
+
+	title("  Branch:")
+	fmt.Println(cyan("    Name:"), i.BranchName())
+	fmt.Println(cyan("    Parent:"), parent)
+
+	fmt.Println()
 }
