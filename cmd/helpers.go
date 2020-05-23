@@ -1,12 +1,9 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
@@ -52,15 +49,4 @@ func failIfError(err error) {
 
 func openURL(URL string) {
 	failIfError(browser.OpenURL(URL))
-}
-
-var myClient = &http.Client{Timeout: 10 * time.Second}
-
-// Reference: https://stackoverflow.com/a/31129967
-func getJSON(url string, target interface{}) error {
-	r, err := myClient.Get(url)
-	failIfError(err)
-	defer r.Body.Close()
-
-	return json.NewDecoder(r.Body).Decode(target)
 }

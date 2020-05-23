@@ -6,7 +6,6 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/greganswer/workflow/git"
 	"github.com/greganswer/workflow/issues"
@@ -25,11 +24,10 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 }
 
-func preRunStartCmd(cmd *cobra.Command, args []string) {
-	// TODO: Enable this.
-	//if !git.RepoIsClean() {
-	//	failIfError(git.RepoIsDirtyErr)
-	//}
+func preRunStartCmd(*cobra.Command, []string) {
+	if !git.RepoIsClean() {
+		failIfError(git.RepoIsDirtyErr)
+	}
 }
 
 func runStartCmd(cmd *cobra.Command, args []string) {
@@ -48,16 +46,6 @@ func runStartCmd(cmd *cobra.Command, args []string) {
 	failIfError(git.Pull())
 	failIfError(git.CreateBranch(issue.BranchName()))
 	failIfError(jira.TransitionIssueToInProgress(issue.ID, config.Jira))
-}
-
-// newJiraConfig from global and local configs.
-func newJiraConfig(global *viper.Viper, local *viper.Viper) jira.Config {
-	return jira.Config{
-		Username: global.GetString(jira.UsernameConfigKey),
-		Token:    global.GetString(jira.TokenConfigKey),
-		APIURL:   local.GetString(jira.APIConfigKey),
-		WebURL:   local.GetString(jira.WebConfigKey),
-	}
 }
 
 // displayIssueAndBranchInfo in a nicely formatted way.

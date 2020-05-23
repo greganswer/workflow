@@ -21,7 +21,7 @@ var rootCmd = &cobra.Command{
 }
 
 // persistentPreRun runs settings before each command
-func persistentPreRun(cmd *cobra.Command, args []string) {
+func persistentPreRun(*cobra.Command, []string) {
 	if git.RootDir() == "" {
 		failIfError(git.NotInitializedErr)
 	}

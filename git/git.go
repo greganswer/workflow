@@ -4,16 +4,24 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
 var RepoIsDirtyErr = fmt.Errorf("repository has unstaged changes")
 var NotInitializedErr = fmt.Errorf("git repository has not been initialized")
 
-// TODO: REMOVE ME
-func todo(message string) {
-	fmt.Println(color.YellowString("TODO:"), fmt.Sprintf("Implement git.%s", message))
+// Checkout branch by name.
+func Checkout(branch string) error {
+	return executeAndStream("git", "checkout", branch)
+}
+
+// CreateBranch creates a new git branch.
+func CreateBranch(name string) error {
+	return executeAndStream("git", "checkout", "-b", name)
+}
+
+// DirIsClean returns false if there are changes in the repo.
+func RepoIsClean() bool {
+	return exec.Command("git", "diff", "--exit-code").Run() == nil
 }
 
 // RootDir is the root directory of the Git project.
@@ -23,28 +31,7 @@ func RootDir() string {
 	return strings.TrimSuffix(string(out), "\n")
 }
 
-// Checkout branch by name.
-func Checkout(branch string) error {
-	todo("Checkout")
-	return nil
-	// return exec.Command("git", "checkout", branch).Run()
-}
-
-// CreateBranch creates a new git branch.
-func CreateBranch(name string) error {
-	todo("CreateBranch")
-	return nil
-	// return exec.Command("git", "checkout", "-b", name).Run()
-}
-
-// DirIsClean returns false if there are changes in the repo.
-func RepoIsClean() bool {
-	return exec.Command("git", "diff", "--exit-code").Run() == nil
-}
-
 // Pull gets new changes from the remote repo.
 func Pull() error {
-	todo("Pull")
-	return nil
-	// return exec.Command("git", "pull").Run()
+	return executeAndStream("git", "pull")
 }
