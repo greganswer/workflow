@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
+	"github.com/greganswer/workflow/git"
 
 	"github.com/fatih/color"
 
@@ -14,31 +17,43 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// startCmd represents the start command
+// startCmd represents the start command.
 var startCmd = &cobra.Command{
-	Use:   "start",
-	Short: "Start your workflow with the ID of a Jira ticket",
-	Run:   runStartCmd,
+	Use:    "start",
+	Short:  "Start your workflow with the ID of a Jira issue",
+	PreRun: preRunStartCmd,
+	Run:    runStartCmd,
 }
 
 func init() {
 	rootCmd.AddCommand(startCmd)
 }
 
-// TODO: On app initialize, validate all Config info
-func runStartCmd(cmd *cobra.Command, args []string) {
-	j := newJiraConfig(globalConfig, localConfig)
-	issue, err := issues.NewFromJira(args[0], j)
-	failIfError(err)
-
-	ticketAndBranchInfo(issue, "develop")
-
-	// TODO: Handle un-staged changes
-	// Then the develop branch is checked out
-	// And a new branch is created using the ticket type and ID
-
+func preRunStartCmd(cmd *cobra.Command, args []string) {
+	if !git.RepoIsClean() {
+		failIfError(git.RepoIsDirtyErr)
+	}
 }
 
+func runStartCmd(cmd *cobra.Command, args []string) {
+	c := newJiraConfig(globalConfig, localConfig)
+	issue, err := issues.NewFromJira(args[0], c)
+	failIfError(err)
+
+	// TODO: Use base-branch persistent flag
+	baseBranch := "develop"
+	displayIssueAndBranchInfo(issue, baseBranch)
+	if !confirm("Create this branch") {
+		os.Exit(0)
+	}
+
+	failIfError(git.Checkout(baseBranch))
+	failIfError(git.Pull())
+	failIfError(git.CreateBranch(issue.BranchName()))
+	failIfError(jira.TransitionIssueToInProgress(issue.ID, c))
+}
+
+// newJiraConfig from global and local configs.
 func newJiraConfig(global *viper.Viper, local *viper.Viper) jira.Config {
 	return jira.Config{
 		Username: global.GetString(jira.UsernameConfigKey),
@@ -89,14 +104,15 @@ func getJiraAPIURL() string {
 	return URL
 }
 
-func ticketAndBranchInfo(i issues.Issue, parent string) {
+func displayIssueAndBranchInfo(i issues.Issue, parent string) {
 	cyan := color.New(color.FgHiCyan).SprintFunc()
 	fmt.Println()
 
-	title("  Ticket:")
+	title("  Issue:")
 	fmt.Println(cyan("    ID:"), i.ID)
 	fmt.Println(cyan("    Title:"), i.Title)
 	fmt.Println(cyan("    Type:"), i.Type)
+	fmt.Println()
 
 	title("  Branch:")
 	fmt.Println(cyan("    Name:"), i.BranchName())

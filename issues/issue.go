@@ -1,23 +1,16 @@
 package issues
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"net/url"
 	"path"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/greganswer/workflow/jira"
 )
 
-const TitleMaxLengthForBranchName = 34
-
-var httpClient = &http.Client{Timeout: 10 * time.Second}
-
-// Issue contains the ticket information.
+// Issue contains the issue information.
 type Issue struct {
 	ID     string
 	Title  string
@@ -26,33 +19,29 @@ type Issue struct {
 	WebURL string
 }
 
-// NewFromJira creates an issue by making an HTTP request to the issue tracker API.
-// Reference: https://stackoverflow.com/questions/12864302
-func NewFromJira(issueID string, j jira.Config) (Issue, error) {
-	u := joinURLPath(j.WebURL, jira.APIIssuePath, issueID)
-	request, err := http.NewRequest("GET", u, nil)
+// NewFromJira converts a Jira Issue to an Issue entity.
+// It does this by making an HTTP request to the issue tracker API.
+func NewFromJira(issueID string, c jira.Config) (Issue, error) {
+	i, err := jira.GetIssue(issueID, c)
 	if err != nil {
 		return Issue{}, err
 	}
-
-	request.Header.Set("Content-type", "application/json")
-	request.SetBasicAuth(j.Username, j.Token)
-	res, err := httpClient.Do(request)
-	if err != nil {
-		return Issue{}, err
-	}
-	defer res.Body.Close()
-
-	var jiraIssue jira.Issue
-	json.NewDecoder(res.Body).Decode(&jiraIssue)
 
 	return Issue{
-		ID:     jiraIssue.Key,
-		Title:  jiraIssue.Fields.Summary,
-		Type:   jiraIssue.Fields.IssueType.Name,
-		APIURL: jiraIssue.Self,
-		WebURL: joinURLPath(j.WebURL, jira.WebIssuePath, issueID),
+		ID:     i.Key,
+		Title:  i.Fields.Summary,
+		Type:   i.Fields.IssueType.Name,
+		APIURL: i.Self,
+		WebURL: joinURLPath(c.WebURL, jira.WebIssuePath, issueID),
 	}, nil
+}
+
+// String representation of an issue.
+func (i Issue) String() string {
+	if i.ID != "" && i.Title != "" {
+		return fmt.Sprintf("%s: %s", i.ID, i.Title)
+	}
+	return i.ID
 }
 
 // BranchName from issue ID and title.

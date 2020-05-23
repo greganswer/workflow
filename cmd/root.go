@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"os/user"
 	"path"
+
+	"github.com/fatih/color"
 
 	"github.com/greganswer/workflow/file"
 
@@ -23,9 +26,20 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:     "workflow",
-	Version: "0.1.0",
-	Short:   "Automate software development workflows using the command line",
+	Use:              "workflow",
+	Version:          "0.1.0",
+	Short:            "Automate software development workflows using the command line",
+	PersistentPreRun: persistentPreRun,
+}
+
+// TODO: REMOVE ME
+func todo(message string) {
+	fmt.Println(color.YellowString("TODO:"), fmt.Sprintf("Implement cmd.%s", message))
+}
+
+func persistentPreRun(cmd *cobra.Command, args []string) {
+	// TODO: On app initialize, validate all Config info
+	todo("persistentPreRun")
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -40,6 +54,7 @@ func init() {
 	failIfError(err)
 
 	cobra.OnInitialize(initGlobalConfig, initLocalConfig)
+	rootCmd.PersistentFlags().StringP("base-branch", "b", "develop", "base branch to perform command on")
 }
 
 // Create the global config file.

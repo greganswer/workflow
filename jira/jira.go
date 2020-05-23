@@ -1,5 +1,16 @@
 package jira
 
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+	"path"
+	"time"
+
+	"github.com/fatih/color"
+)
+
 // Config keys.
 const (
 	UsernameConfigKey = "jira.username"
@@ -14,6 +25,8 @@ const (
 	APIIssuePath       = "/rest/api/3/issue"
 	WebIssuePath       = "/browse"
 )
+
+var httpClient = &http.Client{Timeout: 10 * time.Second}
 
 // Config contains Jira configuration values.
 type Config struct {
@@ -49,4 +62,49 @@ type Issue struct {
 			Name  string `json:"displayName"`
 		} `json:"assignee"`
 	} `json:"fields"`
+}
+
+// TODO: REMOVE ME
+func todo(message string) {
+	fmt.Println(color.YellowString("TODO:"), fmt.Sprintf("Implement jira.%s", message))
+}
+
+// GetIssue returns the JSON representation of a Jira issue.
+// It does this by making an HTTP request to the issue tracker API.
+// Reference: https://stackoverflow.com/questions/12864302
+func GetIssue(issueID string, c Config) (Issue, error) {
+	var i Issue
+	u := joinURLPath(c.WebURL, APIIssuePath, issueID)
+	request, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		return Issue{}, err
+	}
+
+	request.Header.Set("Content-type", "application/json")
+	request.SetBasicAuth(c.Username, c.Token)
+	res, err := httpClient.Do(request)
+	if err != nil {
+		return Issue{}, err
+	}
+	defer res.Body.Close()
+
+	json.NewDecoder(res.Body).Decode(&i)
+	return i, nil
+}
+
+// Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-rest-api-3-issue-issueIdOrKey-transitions-post
+func TransitionIssueToInProgress(issueID string, c Config) error {
+	// TODO: Set status.name to "In Progress"
+	// TODO: Set assignee to c.Username
+	todo("TransitionIssueToInProgress")
+	return nil
+}
+
+func joinURLPath(base string, elem ...string) string {
+	u, err := url.Parse(base)
+	if err != nil {
+		return ""
+	}
+	u.Path = path.Join(append([]string{u.Path}, elem...)...)
+	return u.String()
 }
