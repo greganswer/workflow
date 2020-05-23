@@ -30,14 +30,17 @@ func init() {
 }
 
 func preRunStartCmd(cmd *cobra.Command, args []string) {
-	if !git.RepoIsClean() {
-		failIfError(git.RepoIsDirtyErr)
-	}
+	// TODO: Enable this.
+	//if !git.RepoIsClean() {
+	//	failIfError(git.RepoIsDirtyErr)
+	//}
 }
 
 func runStartCmd(cmd *cobra.Command, args []string) {
 	c := newJiraConfig(globalConfig, localConfig)
-	issue, err := issues.NewFromJira(args[0], c)
+	id := args[0]
+	fmt.Printf("Retrieving info for %s...\n", id)
+	issue, err := issues.NewFromJira(id, c)
 	failIfError(err)
 
 	// TODO: Use base-branch persistent flag
