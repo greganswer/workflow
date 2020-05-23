@@ -10,6 +10,8 @@ import (
 	"github.com/greganswer/workflow/jira"
 )
 
+const branchNameMaxLength = "%.60s"
+
 // Issue contains the issue information.
 type Issue struct {
 	ID     string
@@ -21,7 +23,7 @@ type Issue struct {
 
 // NewFromJira converts a Jira Issue to an Issue entity.
 // It does this by making an HTTP request to the issue tracker API.
-func NewFromJira(issueID string, c jira.Config) (Issue, error) {
+func NewFromJira(issueID string, c *jira.Config) (Issue, error) {
 	i, err := jira.GetIssue(issueID, c)
 	if err != nil {
 		return Issue{}, err
@@ -58,7 +60,7 @@ func (i Issue) BranchName() string {
 
 	branch := strings.Join([]string{i.BranchPrefix() + id, title}, "-")
 
-	return fmt.Sprintf("%.60s", strings.ToLower(branch))
+	return fmt.Sprintf(branchNameMaxLength, strings.ToLower(branch))
 }
 
 // BranchPrefix returns the Git flow branch prefixes based on the Issue type.

@@ -4,17 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/greganswer/workflow/git"
-
 	"github.com/fatih/color"
-
-	"github.com/greganswer/workflow/issues"
-
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/greganswer/workflow/git"
+	"github.com/greganswer/workflow/issues"
 	"github.com/greganswer/workflow/jira"
-
-	"github.com/spf13/cobra"
 )
 
 // startCmd represents the start command.
@@ -37,14 +33,12 @@ func preRunStartCmd(cmd *cobra.Command, args []string) {
 }
 
 func runStartCmd(cmd *cobra.Command, args []string) {
-	c := newJiraConfig(globalConfig, localConfig)
 	id := args[0]
 	fmt.Printf("Retrieving info for %s...\n", id)
-	issue, err := issues.NewFromJira(id, c)
+	issue, err := issues.NewFromJira(id, config.Jira)
 	failIfError(err)
 
-	// TODO: Use base-branch persistent flag
-	baseBranch := "develop"
+	baseBranch, _ := cmd.Flags().GetString("base-branch")
 	displayIssueAndBranchInfo(issue, baseBranch)
 	if !confirm("Create this branch") {
 		os.Exit(0)
@@ -53,7 +47,7 @@ func runStartCmd(cmd *cobra.Command, args []string) {
 	failIfError(git.Checkout(baseBranch))
 	failIfError(git.Pull())
 	failIfError(git.CreateBranch(issue.BranchName()))
-	failIfError(jira.TransitionIssueToInProgress(issue.ID, c))
+	failIfError(jira.TransitionIssueToInProgress(issue.ID, config.Jira))
 }
 
 // newJiraConfig from global and local configs.
@@ -66,47 +60,7 @@ func newJiraConfig(global *viper.Viper, local *viper.Viper) jira.Config {
 	}
 }
 
-// Inform the user that a Jira token is required
-// Then open their browser to the page with instructions
-// And prompt the user for a Jira token
-// Then set the jira token in the global config.
-func getJiraToken() string {
-	token := globalConfig.GetString(jira.TokenConfigKey)
-	if token == "" {
-		fmt.Println("A Jira token is required.")
-
-		if confirm("Open URL with instructions") {
-			openURL(jira.APIInstructionsURL)
-		}
-
-		token, err := promptString("Jira token")
-		failIfError(err)
-
-		globalConfig.Set(jira.TokenConfigKey, token)
-		failIfError(globalConfig.WriteConfig())
-	}
-	return token
-}
-
-func getJiraAPIURL() string {
-	URL := globalConfig.GetString(jira.APIConfigKey)
-	if URL == "" {
-		fmt.Println("The Jira API URL is required.")
-
-		// TODO: Find instruction page.
-		//if confirm("Open URL with instructions") {
-		//	openURL(jira.APIInstructionsURL)
-		//}
-
-		URL, err := promptString("Jira API URL")
-		failIfError(err)
-
-		localConfig.Set(jira.APIConfigKey, URL)
-		failIfError(globalConfig.WriteConfig())
-	}
-	return URL
-}
-
+// displayIssueAndBranchInfo in a nicely formatted way.
 func displayIssueAndBranchInfo(i issues.Issue, parent string) {
 	cyan := color.New(color.FgHiCyan).SprintFunc()
 	fmt.Println()

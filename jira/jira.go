@@ -72,7 +72,7 @@ func todo(message string) {
 // GetIssue returns the JSON representation of a Jira issue.
 // It does this by making an HTTP request to the issue tracker API.
 // Reference: https://stackoverflow.com/questions/12864302
-func GetIssue(issueID string, c Config) (Issue, error) {
+func GetIssue(issueID string, c *Config) (Issue, error) {
 	var i Issue
 	u := joinURLPath(c.WebURL, APIIssuePath, issueID)
 	request, err := http.NewRequest("GET", u, nil)
@@ -88,12 +88,12 @@ func GetIssue(issueID string, c Config) (Issue, error) {
 	}
 	defer res.Body.Close()
 
-	json.NewDecoder(res.Body).Decode(&i)
-	return i, nil
+	err = json.NewDecoder(res.Body).Decode(&i)
+	return i, err
 }
 
 // Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-rest-api-3-issue-issueIdOrKey-transitions-post
-func TransitionIssueToInProgress(issueID string, c Config) error {
+func TransitionIssueToInProgress(issueID string, c *Config) error {
 	// TODO: Set status.name to "In Progress"
 	// TODO: Set assignee to c.Username
 	todo("TransitionIssueToInProgress")

@@ -9,6 +9,7 @@ import (
 )
 
 var RepoIsDirtyErr = fmt.Errorf("repository has unstaged changes")
+var NotInitializedErr = fmt.Errorf("git repository has not been initialized")
 
 // TODO: REMOVE ME
 func todo(message string) {

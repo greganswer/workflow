@@ -1,30 +1,18 @@
 package cmd
 
 import (
-	"fmt"
 	"os/user"
-	"path"
-
-	"github.com/fatih/color"
-
-	"github.com/greganswer/workflow/file"
-
-	"github.com/greganswer/workflow/git"
 
 	"github.com/spf13/cobra"
 
-	"github.com/spf13/viper"
+	"github.com/greganswer/workflow/git"
 )
 
-var (
-	currentUser    *user.User
-	globalConfig   *viper.Viper
-	localConfig    *viper.Viper
-	configFilename = ".workflow.yml"
-	configFileType = "yaml"
-)
+var currentUser *user.User
 
-// rootCmd represents the base command when called without any subcommands
+var config = &Config{}
+
+// rootCmd represents the base command when called without any sub commands.
 var rootCmd = &cobra.Command{
 	Use:              "workflow",
 	Version:          "0.1.0",
@@ -32,14 +20,11 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: persistentPreRun,
 }
 
-// TODO: REMOVE ME
-func todo(message string) {
-	fmt.Println(color.YellowString("TODO:"), fmt.Sprintf("Implement cmd.%s", message))
-}
-
+// persistentPreRun runs settings before each command
 func persistentPreRun(cmd *cobra.Command, args []string) {
-	// TODO: On app initialize, validate all Config info
-	todo("persistentPreRun")
+	if git.RootDir() == "" {
+		failIfError(git.NotInitializedErr)
+	}
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -53,29 +38,6 @@ func init() {
 	currentUser, err = user.Current()
 	failIfError(err)
 
-	cobra.OnInitialize(initGlobalConfig, initLocalConfig)
+	cobra.OnInitialize(config.init)
 	rootCmd.PersistentFlags().StringP("base-branch", "b", "develop", "base branch to perform command on")
-}
-
-// Create the global config file.
-// TODO: DRY these 2 functions up.
-func initGlobalConfig() {
-	globalConfig = viper.New()
-	globalConfig.SetConfigName(configFilename)
-	globalConfig.SetConfigType(configFileType)
-	configFilePath := path.Join(currentUser.HomeDir, configFilename)
-	globalConfig.SetConfigFile(configFilePath)
-	file.Touch(configFilePath)
-	failIfError(globalConfig.ReadInConfig())
-}
-
-// Create the local config file.
-func initLocalConfig() {
-	localConfig = viper.New()
-	localConfig.SetConfigName(configFilename)
-	globalConfig.SetConfigType(configFileType)
-	configFilePath := path.Join(git.RootDir(), configFilename)
-	localConfig.SetConfigFile(configFilePath)
-	file.Touch(configFilePath)
-	failIfError(localConfig.ReadInConfig())
 }

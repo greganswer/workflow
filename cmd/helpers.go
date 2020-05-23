@@ -8,11 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/browser"
-
 	"github.com/fatih/color"
-
 	"github.com/manifoldco/promptui"
+	"github.com/pkg/browser"
 )
 
 func title(s string) {
