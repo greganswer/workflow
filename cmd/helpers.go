@@ -11,7 +11,7 @@ import (
 )
 
 func title(s string) {
-	c := color.New(color.FgMagenta, color.Bold)
+	c := color.New(color.FgHiMagenta, color.Bold)
 	c.Println(s)
 }
 

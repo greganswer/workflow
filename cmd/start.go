@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -14,9 +15,10 @@ import (
 
 // startCmd represents the start command.
 var startCmd = &cobra.Command{
-	Use:    "start",
+	Use:    "start <issueID>",
 	Short:  "Start your workflow with the ID of a Jira issue",
 	PreRun: preRunStartCmd,
+	Args:   validateStartCmdArgs,
 	Run:    runStartCmd,
 }
 
@@ -24,10 +26,17 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 }
 
-func preRunStartCmd(*cobra.Command, []string) {
-	if !git.RepoIsClean() {
-		failIfError(git.RepoIsDirtyErr)
+func validateStartCmdArgs(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("requires the issueID argument")
 	}
+	return nil
+}
+
+func preRunStartCmd(*cobra.Command, []string) {
+	// if !git.RepoIsClean() {
+	// 	failIfError(git.RepoIsDirtyErr)
+	// }
 }
 
 func runStartCmd(cmd *cobra.Command, args []string) {
