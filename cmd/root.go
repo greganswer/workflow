@@ -39,5 +39,5 @@ func init() {
 	failIfError(err)
 
 	cobra.OnInitialize(config.init)
-	rootCmd.PersistentFlags().StringP("base-branch", "b", "develop", "base branch to perform command on")
+	rootCmd.PersistentFlags().StringP("base", "B", "develop", "base branch to perform command on")
 }
