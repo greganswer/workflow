@@ -64,6 +64,11 @@ type Issue struct {
 	} `json:"fields"`
 }
 
+// Error is the data structure for an error response from Jira's JSON API.
+type Error struct {
+	Messages []string `json:"errorMessages"`
+}
+
 // TODO: REMOVE ME
 func todo(message string) {
 	fmt.Println(color.YellowString("TODO:"), fmt.Sprintf("Implement jira.%s", message))
@@ -87,6 +92,15 @@ func GetIssue(issueID string, c *Config) (Issue, error) {
 		return Issue{}, err
 	}
 	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		var e Error
+		err = json.NewDecoder(res.Body).Decode(&e)
+		if err != nil {
+			return Issue{}, err
+		}
+		return Issue{}, fmt.Errorf("%s: %s", res.Status, e.Messages)
+	}
 
 	err = json.NewDecoder(res.Body).Decode(&i)
 	return i, err
