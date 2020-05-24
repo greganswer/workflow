@@ -36,7 +36,7 @@ func runStartCmd(cmd *cobra.Command, args []string) {
 	issue, err := issues.NewFromJira(id, config.Jira)
 	failIfError(err)
 
-	baseBranch, _ := cmd.Flags().GetString("base-branch")
+	baseBranch, _ := cmd.Flags().GetString("base")
 	displayIssueAndBranchInfo(issue, baseBranch)
 	if !confirm("Create this branch") {
 		os.Exit(0)
@@ -49,7 +49,7 @@ func runStartCmd(cmd *cobra.Command, args []string) {
 }
 
 // displayIssueAndBranchInfo in a nicely formatted way.
-func displayIssueAndBranchInfo(i issues.Issue, parent string) {
+func displayIssueAndBranchInfo(i issues.Issue, base string) {
 	cyan := color.New(color.FgHiCyan).SprintFunc()
 	fmt.Println()
 
@@ -61,7 +61,7 @@ func displayIssueAndBranchInfo(i issues.Issue, parent string) {
 
 	title("  Branch:")
 	fmt.Println(cyan("    Name:"), i.BranchName())
-	fmt.Println(cyan("    Parent:"), parent)
+	fmt.Println(cyan("    Base:"), base)
 
 	fmt.Println()
 }
