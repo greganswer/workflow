@@ -24,14 +24,14 @@ func init() {
 	rootCmd.AddCommand(prCmd)
 }
 
-func preRunPrCmd(cmd *cobra.Command, args []string) {
+func preRunPrCmd(cmd *cobra.Command, _ []string) {
 	force, _ := cmd.Flags().GetBool("force")
 	if !force && !git.RepoIsClean() {
 		failIfError(git.RepoIsDirtyErr)
 	}
 }
 
-func runPrCmd(cmd *cobra.Command, args []string) {
+func runPrCmd(cmd *cobra.Command, _ []string) {
 	branch, err := git.CurrentBranch()
 	failIfError(err)
 
@@ -60,7 +60,6 @@ func displayIssueAndPRInfo(i issues.Issue, pr github.PullRequest) {
 	title("  Pull request:")
 	fmt.Println(cyan("    Title:"), pr.Title)
 	fmt.Println(cyan("    Base:"), pr.Base)
-	fmt.Println(cyan("    Draft:"), pr.Draft)
 	fmt.Println(cyan("    Assignee:"), pr.Assignee)
 	fmt.Println(cyan("    Template:"), pr.Template)
 
