@@ -3,12 +3,15 @@ package github
 import (
 	"fmt"
 	"io/ioutil"
+	"os/exec"
 	"path"
 
 	"github.com/greganswer/workflow/file"
 	"github.com/greganswer/workflow/git"
 	"github.com/greganswer/workflow/issues"
 )
+
+const CLIInstallationInstructions = "https://cli.github.com"
 
 var PRBodyTemplatePath = path.Join(git.RootDir(), ".github", "PULL_REQUEST_TEMPLATE.md")
 
@@ -24,7 +27,7 @@ type PullRequest struct {
 // NewPr create the Pull Request data structure ready to create a PR on GitHub.
 func NewPr(issue issues.Issue, baseBranch string) (PullRequest, error) {
 	template := "None"
-	body := fmt.Sprintf("# [Issue #%s](%s)\n", issue.ID, issue.WebURL)
+	body := fmt.Sprintf("## [Issue #%s](%s)\n", issue.ID, issue.WebURL)
 
 	exists, err := file.Exists(PRBodyTemplatePath)
 	if exists {
@@ -54,4 +57,9 @@ func (p *PullRequest) Create() error {
 		"--body", p.Body,
 		"--web",
 	)
+}
+
+func CLIExists() bool {
+	_, err := exec.LookPath("gh")
+	return err == nil
 }

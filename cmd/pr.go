@@ -29,6 +29,13 @@ func preRunPrCmd(cmd *cobra.Command, _ []string) {
 	if !force && !git.RepoIsClean() {
 		failIfError(git.RepoIsDirtyErr)
 	}
+	if !github.CLIExists() {
+		fmt.Println("The 'gh' CLI app is required to execute this command.")
+		if confirm("Open URL with instructions") {
+			openURL(github.CLIInstallationInstructions)
+		}
+		os.Exit(1)
+	}
 }
 
 func runPrCmd(cmd *cobra.Command, _ []string) {
