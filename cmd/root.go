@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 	"os/user"
 
 	"github.com/spf13/cobra"
@@ -22,6 +23,8 @@ var rootCmd = &cobra.Command{
 
 // persistentPreRun runs settings before each command
 func persistentPreRun(*cobra.Command, []string) {
+	// TODO: Find a better place to initialize this.
+	config.Jira.APIURL = os.Getenv("WORKFLOW_ISSUE_API_URL")
 	if git.RootDir() == "" {
 		failIfError(git.NotInitializedErr)
 	}

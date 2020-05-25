@@ -80,7 +80,7 @@ func todo(message string) {
 func GetIssue(issueID string, c *Config) (Issue, error) {
 	fmt.Printf("Retrieving info for %s Jira issue...\n", issueID)
 	var i Issue
-	u := joinURLPath(c.WebURL, APIIssuePath, issueID)
+	u := joinURLPath(c.APIURL, APIIssuePath, issueID)
 	request, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		return Issue{}, err

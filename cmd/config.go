@@ -82,17 +82,19 @@ func (c *Config) settings() []Setting {
 			Description:    "Your Jira username is required to access issue info from Jira's API.",
 			InstructionURL: jira.APIInstructionsURL,
 			Label:          "Jira username",
-		}, {
+		},
+		{
 			Parent:      c.Global,
 			Key:         jira.TokenConfigKey,
 			Description: "A Jira token is required to access issue info from Jira's API.",
 			Label:       "Jira token",
-		}, {
-			Parent:      c.Local,
-			Key:         jira.APIConfigKey,
-			Description: "The project Jira API URL is required to access issue info.",
-			Label:       "Jira API URL",
 		},
+		// {
+		// 	Parent:      c.Local,
+		// 	Key:         jira.APIConfigKey,
+		// 	Description: "The project Jira API URL is required to access issue info.",
+		// 	Label:       "Jira API URL",
+		// },
 	}
 }
 
