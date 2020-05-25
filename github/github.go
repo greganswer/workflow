@@ -17,29 +17,27 @@ type PullRequest struct {
 	Assignee string
 	Base     string
 	Body     string
-	Draft    bool
 	Title    string
 	Template string
 }
 
 // NewPr create the Pull Request data structure ready to create a PR on GitHub.
-func NewPr(issue issues.Issue, baseBranch string, draft bool) (PullRequest, error) {
+func NewPr(issue issues.Issue, baseBranch string) (PullRequest, error) {
 	template := "None"
-	body := ""
+	body := fmt.Sprintf("# [Issue #%s](%s)\n", issue.ID, issue.WebURL)
 
 	exists, err := file.Exists(PRBodyTemplatePath)
 	if exists {
 		b, err := ioutil.ReadFile(PRBodyTemplatePath)
 		if err == nil {
 			template = PRBodyTemplatePath
-			body = string(b)
+			body += string(b)
 		}
 	}
 
 	return PullRequest{
 		Title:    issue.String(),
 		Base:     baseBranch,
-		Draft:    draft,
 		Template: template,
 		Body:     body,
 	}, err
@@ -50,13 +48,10 @@ func NewPr(issue issues.Issue, baseBranch string, draft bool) (PullRequest, erro
 func (p *PullRequest) Create() error {
 	fmt.Println("Creating Pull Request on GitHub...")
 
-	// -a, --assignee login   Assign a person by their login
-	// -B, --base string      The branch into which you want your code merged
-	// -b, --body string      Supply a body. Will prompt for one otherwise.
-	// -d, --draft            Mark pull request as a draft
-	// -r, --reviewer login   Request a review from someone by their login
-	// -t, --title string     Supply a title. Will prompt for one otherwise.
-	// -w, --web              Open the web browser to create a pull request
-
-	return nil
+	return executeAndStream("gh", "pr", "create",
+		"--base", p.Base,
+		"--title", p.Title,
+		"--body", p.Body,
+		"--web",
+	)
 }

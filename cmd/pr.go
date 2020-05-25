@@ -39,8 +39,7 @@ func runPrCmd(cmd *cobra.Command, args []string) {
 	failIfError(err)
 
 	baseBranch, _ := cmd.Flags().GetString("base")
-	draft := confirm("Create draft")
-	pr, err := github.NewPr(issue, baseBranch, draft)
+	pr, err := github.NewPr(issue, baseBranch)
 	warnIfError(err)
 
 	displayIssueAndPRInfo(issue, pr)
