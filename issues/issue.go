@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/greganswer/workflow/jira"
@@ -36,6 +37,11 @@ func NewFromJira(issueID string, c *jira.Config) (Issue, error) {
 		APIURL: i.Self,
 		WebURL: joinURLPath(c.WebURL, jira.WebIssuePath, issueID),
 	}, nil
+}
+
+func NewFromBranch(branch string, c *jira.Config) (Issue, error) {
+	issueID := parseIssueIdFromBranch(branch)
+	return NewFromJira(issueID, c)
 }
 
 // String representation of an issue.
@@ -82,4 +88,18 @@ func joinURLPath(base string, elem ...string) string {
 	}
 	u.Path = path.Join(append([]string{u.Path}, elem...)...)
 	return u.String()
+}
+
+func parseIssueIdFromBranch(branch string) string {
+	kebabCase := strings.Split(branch, "/")
+	if len(kebabCase) < 2 {
+		return ""
+	}
+	parts := strings.Split(kebabCase[1], "-")
+	for i, part := range parts {
+		if _, err := strconv.Atoi(part); err == nil {
+			return strings.Join(parts[:i+1], "-")
+		}
+	}
+	return ""
 }

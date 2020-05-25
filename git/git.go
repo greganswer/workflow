@@ -19,6 +19,12 @@ func CreateBranch(name string) error {
 	return executeAndStream("git", "checkout", "-b", name)
 }
 
+// CurrentBranch returns the current branch for this Git repo.
+func CurrentBranch() (string, error) {
+	out, err := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD").Output()
+	return strings.Trim(string(out), "\n"), err
+}
+
 // DirIsClean returns false if there are changes in the repo.
 func RepoIsClean() bool {
 	return exec.Command("git", "diff", "--exit-code").Run() == nil

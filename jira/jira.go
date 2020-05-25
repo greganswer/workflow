@@ -78,6 +78,7 @@ func todo(message string) {
 // It does this by making an HTTP request to the issue tracker API.
 // Reference: https://stackoverflow.com/questions/12864302
 func GetIssue(issueID string, c *Config) (Issue, error) {
+	fmt.Printf("Retrieving info for %s Jira issue...\n", issueID)
 	var i Issue
 	u := joinURLPath(c.WebURL, APIIssuePath, issueID)
 	request, err := http.NewRequest("GET", u, nil)
@@ -95,8 +96,7 @@ func GetIssue(issueID string, c *Config) (Issue, error) {
 
 	if res.StatusCode != 200 {
 		var e Error
-		err = json.NewDecoder(res.Body).Decode(&e)
-		if err != nil {
+		if err = json.NewDecoder(res.Body).Decode(&e); err != nil {
 			return Issue{}, err
 		}
 		return Issue{}, fmt.Errorf("%s: %s", res.Status, e.Messages)
@@ -110,6 +110,7 @@ func GetIssue(issueID string, c *Config) (Issue, error) {
 func TransitionIssueToInProgress(issueID string, c *Config) error {
 	// TODO: Set status.name to "In Progress"
 	// TODO: Set assignee to c.Username
+	fmt.Printf("Transitioning Jira issue %s to 'In Progress'...\n", issueID)
 	todo("TransitionIssueToInProgress")
 	return nil
 }

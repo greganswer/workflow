@@ -40,4 +40,5 @@ func init() {
 
 	cobra.OnInitialize(config.init)
 	rootCmd.PersistentFlags().StringP("base", "B", "develop", "base branch to perform command on")
+	rootCmd.PersistentFlags().BoolP("force", "f", false, "force the command to run")
 }

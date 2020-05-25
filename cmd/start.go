@@ -33,22 +33,22 @@ func validateStartCmdArgs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func preRunStartCmd(*cobra.Command, []string) {
-	// if !git.RepoIsClean() {
-	// 	failIfError(git.RepoIsDirtyErr)
-	// }
+func preRunStartCmd(cmd *cobra.Command, args []string) {
+	force, _ := cmd.Flags().GetBool("force")
+	if !force && !git.RepoIsClean() {
+		failIfError(git.RepoIsDirtyErr)
+	}
 }
 
 func runStartCmd(cmd *cobra.Command, args []string) {
 	id := args[0]
-	fmt.Printf("Retrieving info for %s...\n", id)
 	issue, err := issues.NewFromJira(id, config.Jira)
 	failIfError(err)
 
 	baseBranch, _ := cmd.Flags().GetString("base")
 	displayIssueAndBranchInfo(issue, baseBranch)
 	if !confirm("Create this branch") {
-		os.Exit(0)
+		os.Exit(1)
 	}
 
 	failIfError(git.Checkout(baseBranch))
@@ -61,12 +61,7 @@ func runStartCmd(cmd *cobra.Command, args []string) {
 func displayIssueAndBranchInfo(i issues.Issue, base string) {
 	cyan := color.New(color.FgHiCyan).SprintFunc()
 	fmt.Println()
-
-	title("  Issue:")
-	fmt.Println(cyan("    ID:"), i.ID)
-	fmt.Println(cyan("    Title:"), i.Title)
-	fmt.Println(cyan("    Type:"), i.Type)
-	fmt.Println()
+	displayIssueInfo(i)
 
 	title("  Branch:")
 	fmt.Println(cyan("    Name:"), i.BranchName())

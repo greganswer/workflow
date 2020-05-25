@@ -8,6 +8,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/pkg/browser"
+
+	"github.com/greganswer/workflow/issues"
 )
 
 func title(s string) {
@@ -47,6 +49,23 @@ func failIfError(err error) {
 	}
 }
 
+// warnIfError warns the user with a standardized error message if an error occurred.
+func warnIfError(err error) {
+	if err != nil {
+		yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
+		os.Stderr.WriteString(fmt.Sprint(yellow("WARN: "), err, "\n"))
+	}
+}
+
 func openURL(URL string) {
 	failIfError(browser.OpenURL(URL))
+}
+
+func displayIssueInfo(i issues.Issue) {
+	cyan := color.New(color.FgHiCyan).SprintFunc()
+	title("  Issue:")
+	fmt.Println(cyan("    ID:"), i.ID)
+	fmt.Println(cyan("    Title:"), i.Title)
+	fmt.Println(cyan("    Type:"), i.Type)
+	fmt.Println()
 }
