@@ -46,7 +46,8 @@ func runPrCmd(cmd *cobra.Command, _ []string) {
 	failIfError(err)
 
 	baseBranch, _ := cmd.Flags().GetString("base")
-	pr, err := github.NewPr(issue, baseBranch)
+	assignee := config.Global.GetString(github.UsernameConfigKey)
+	pr, err := github.NewPr(issue, baseBranch, assignee)
 	warnIfError(err)
 
 	displayIssueAndPRInfo(issue, pr)

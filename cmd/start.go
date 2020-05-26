@@ -26,14 +26,14 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 }
 
-func validateStartCmdArgs(cmd *cobra.Command, args []string) error {
+func validateStartCmdArgs(_ *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return errors.New("requires the issueID argument")
 	}
 	return nil
 }
 
-func preRunStartCmd(cmd *cobra.Command, args []string) {
+func preRunStartCmd(cmd *cobra.Command, _ []string) {
 	force, _ := cmd.Flags().GetBool("force")
 	if !force && !git.RepoIsClean() {
 		failIfError(git.RepoIsDirtyErr)

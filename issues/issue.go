@@ -11,7 +11,7 @@ import (
 	"github.com/greganswer/workflow/jira"
 )
 
-const branchNameMaxLength = "%.60s"
+const branchNameMaxLength = "%.50s"
 
 // Issue contains the issue information.
 type Issue struct {

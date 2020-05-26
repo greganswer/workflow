@@ -12,6 +12,7 @@ import (
 )
 
 const CLIInstallationInstructions = "https://cli.github.com"
+const UsernameConfigKey = "github.username"
 
 var PRBodyTemplatePath = path.Join(git.RootDir(), ".github", "PULL_REQUEST_TEMPLATE.md")
 
@@ -25,9 +26,9 @@ type PullRequest struct {
 }
 
 // NewPr create the Pull Request data structure ready to create a PR on GitHub.
-func NewPr(issue issues.Issue, baseBranch string) (PullRequest, error) {
+func NewPr(issue issues.Issue, baseBranch, assignee string) (PullRequest, error) {
 	template := "None"
-	body := fmt.Sprintf("## [Issue #%s](%s)\n", issue.ID, issue.WebURL)
+	body := fmt.Sprintf("## [Issue #%s](%s)\n\n", issue.ID, issue.WebURL)
 
 	exists, err := file.Exists(PRBodyTemplatePath)
 	if exists {
@@ -43,6 +44,7 @@ func NewPr(issue issues.Issue, baseBranch string) (PullRequest, error) {
 		Base:     baseBranch,
 		Template: template,
 		Body:     body,
+		Assignee: assignee,
 	}, err
 }
 
@@ -55,6 +57,7 @@ func (p *PullRequest) Create() error {
 		"--base", p.Base,
 		"--title", p.Title,
 		"--body", p.Body,
+		"--assignee", p.Assignee,
 		"--web",
 	)
 }

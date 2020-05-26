@@ -8,6 +8,7 @@ import (
 
 	"github.com/greganswer/workflow/file"
 	"github.com/greganswer/workflow/git"
+	"github.com/greganswer/workflow/github"
 	"github.com/greganswer/workflow/jira"
 )
 
@@ -88,6 +89,12 @@ func (c *Config) settings() []Setting {
 			Key:         jira.TokenConfigKey,
 			Description: "A Jira token is required to access issue info from Jira's API.",
 			Label:       "Jira token",
+		},
+		{
+			Parent:      c.Global,
+			Key:         github.UsernameConfigKey,
+			Description: "Your GitHub username is required to assign pull requests.",
+			Label:       "GitHub username",
 		},
 		// {
 		// 	Parent:      c.Local,
