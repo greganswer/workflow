@@ -62,6 +62,7 @@ func (p *PullRequest) Create() error {
 	)
 }
 
+// CLIExists returns true if the "gh" app exists.
 func CLIExists() bool {
 	_, err := exec.LookPath("gh")
 	return err == nil

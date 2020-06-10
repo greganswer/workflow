@@ -9,6 +9,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/pkg/browser"
 
+	"github.com/greganswer/workflow/git"
 	"github.com/greganswer/workflow/issues"
 )
 
@@ -63,9 +64,13 @@ func openURL(URL string) {
 
 func displayIssueInfo(i issues.Issue) {
 	cyan := color.New(color.FgHiCyan).SprintFunc()
+	projectName, err := git.ProjectName()
+	failIfError(err)
+
 	title("  Issue:")
 	fmt.Println(cyan("    ID:"), i.ID)
 	fmt.Println(cyan("    Title:"), i.Title)
 	fmt.Println(cyan("    Type:"), i.Type)
+	fmt.Println(cyan("    Project:"), projectName)
 	fmt.Println()
 }

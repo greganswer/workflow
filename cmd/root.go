@@ -25,6 +25,7 @@ var rootCmd = &cobra.Command{
 func persistentPreRun(*cobra.Command, []string) {
 	// TODO: Find a better place to initialize this.
 	config.Jira.APIURL = os.Getenv("WORKFLOW_ISSUE_API_URL")
+	config.Jira.WebURL = os.Getenv("WORKFLOW_ISSUE_API_URL")
 	if git.RootDir() == "" {
 		failIfError(git.NotInitializedErr)
 	}

@@ -41,3 +41,26 @@ func RootDir() string {
 func Pull() error {
 	return executeAndStream("git", "pull")
 }
+
+// Remote gets the remote project info.
+func Remote() (string, error) {
+	out, err := exec.Command("git", "remote", "-v").Output()
+	return strings.Trim(string(out), "\n"), err
+}
+
+// ProjectName extracts the project name from the remote info.
+func ProjectName() (string, error) {
+	out, err := Remote()
+	if err != nil {
+		return "", nil
+	}
+	a := strings.Split(string(out), "/")
+	b := a[len(a)-2:]
+	c := strings.Join(b, "/")
+	d := strings.Split(c, "\n")
+	e := strings.TrimPrefix(d[len(d)-1], "origin")
+	f := strings.TrimSpace(e)
+	g := strings.TrimPrefix(f, "git@github.com:")
+
+	return strings.TrimSuffix(g, ".git (push)"), nil
+}

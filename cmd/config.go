@@ -41,7 +41,8 @@ func (c *Config) init() {
 		path.Join(currentUser.HomeDir, filename),
 	)
 
-	configs := []*viper.Viper{c.Local, c.Global}
+	// TODO: configs := []*viper.Viper{c.Local, c.Global}
+	configs := []*viper.Viper{c.Global}
 	for _, v := range configs {
 		file.Touch(v.ConfigFileUsed())
 		failIfError(v.ReadInConfig())
@@ -110,7 +111,8 @@ func (c *Config) update() error {
 	if err := c.Global.WriteConfig(); err != nil {
 		return err
 	}
-	return c.Local.WriteConfig()
+	// return c.Local.WriteConfig() // TODO: Get local working.
+	return nil
 }
 
 // initJira from global and local configs.
