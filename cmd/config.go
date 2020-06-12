@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/greganswer/workflow/file"
-	"github.com/greganswer/workflow/git"
 	"github.com/greganswer/workflow/github"
 	"github.com/greganswer/workflow/jira"
 )
@@ -33,9 +32,9 @@ func (c *Config) init() {
 	c.Global = viper.New()
 	c.Local = viper.New()
 
-	c.Local.SetConfigFile(
-		path.Join(git.RootDir(), filename),
-	)
+	// c.Local.SetConfigFile(
+	// 	path.Join(git.RootDir(), filename),
+	// )
 
 	c.Global.SetConfigFile(
 		path.Join(currentUser.HomeDir, filename),
