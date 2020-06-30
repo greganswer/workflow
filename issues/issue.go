@@ -73,11 +73,11 @@ func (i Issue) BranchName() string {
 func (i Issue) BranchPrefix() string {
 	switch i.Type {
 	case "Story":
-		return "feature/"
+		return "feature-"
 	case "Bug":
-		return "bug/"
+		return "bug-"
 	default:
-		return "task/"
+		return "task-"
 	}
 }
 
