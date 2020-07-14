@@ -91,14 +91,13 @@ func joinURLPath(base string, elem ...string) string {
 }
 
 func parseIssueIdFromBranch(branch string) string {
-	kebabCase := strings.Split(branch, "/")
-	if len(kebabCase) < 2 {
+	parts := strings.Split(branch, "-")
+	if len(parts) < 4 {
 		return ""
 	}
-	parts := strings.Split(kebabCase[1], "-")
 	for i, part := range parts {
 		if _, err := strconv.Atoi(part); err == nil {
-			return strings.Join(parts[:i+1], "-")
+			return strings.Join(parts[1:i+1], "-")
 		}
 	}
 	return ""
