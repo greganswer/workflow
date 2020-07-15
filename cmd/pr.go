@@ -47,7 +47,8 @@ func runPrCmd(cmd *cobra.Command, _ []string) {
 
 	baseBranch, _ := cmd.Flags().GetString("base")
 	assignee := config.Global.GetString(github.UsernameConfigKey)
-	pr, err := github.NewPr(issue, baseBranch, assignee)
+	reviewers := os.Getenv("WORKFLOW_PR_REVIEWERS")
+	pr, err := github.NewPr(issue, baseBranch, assignee, reviewers)
 	warnIfError(err)
 
 	displayIssueAndPRInfo(issue, pr)
@@ -57,6 +58,7 @@ func runPrCmd(cmd *cobra.Command, _ []string) {
 	}
 
 	failIfError(pr.Create())
+	failIfError(github.OpenPR(branch))
 }
 
 // displayIssueAndPRInfo in a nicely formatted way.
@@ -69,6 +71,7 @@ func displayIssueAndPRInfo(i issues.Issue, pr github.PullRequest) {
 	fmt.Println(cyan("    Title:"), pr.Title)
 	fmt.Println(cyan("    Base:"), pr.Base)
 	fmt.Println(cyan("    Assignee:"), pr.Assignee)
+	fmt.Println(cyan("    Reviewers:"), pr.Reviewers)
 	fmt.Println(cyan("    Template:"), pr.Template)
 
 	fmt.Println()

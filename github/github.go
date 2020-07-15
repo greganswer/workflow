@@ -18,15 +18,16 @@ var PRBodyTemplatePath = path.Join(git.RootDir(), ".github", "PULL_REQUEST_TEMPL
 
 // PullRequest contains GitHub Pull Request data.
 type PullRequest struct {
-	Assignee string
-	Base     string
-	Body     string
-	Title    string
-	Template string
+	Assignee  string
+	Reviewers string
+	Base      string
+	Body      string
+	Title     string
+	Template  string
 }
 
 // NewPr create the Pull Request data structure ready to create a PR on GitHub.
-func NewPr(issue issues.Issue, baseBranch, assignee string) (PullRequest, error) {
+func NewPr(issue issues.Issue, baseBranch, assignee, reviewers string) (PullRequest, error) {
 	template := "None"
 	body := fmt.Sprintf("## [Issue #%s](%s)\n\n", issue.ID, issue.WebURL)
 
@@ -40,11 +41,12 @@ func NewPr(issue issues.Issue, baseBranch, assignee string) (PullRequest, error)
 	}
 
 	return PullRequest{
-		Title:    issue.String(),
-		Base:     baseBranch,
-		Template: template,
-		Body:     body,
-		Assignee: assignee,
+		Title:     issue.String(),
+		Base:      baseBranch,
+		Template:  template,
+		Body:      body,
+		Assignee:  assignee,
+		Reviewers: reviewers,
 	}, err
 }
 
@@ -58,7 +60,7 @@ func (p *PullRequest) Create() error {
 		"--title", p.Title,
 		"--body", p.Body,
 		"--assignee", p.Assignee,
-		"--web",
+		"--reviewer", p.Reviewers,
 	)
 }
 
@@ -66,4 +68,10 @@ func (p *PullRequest) Create() error {
 func CLIExists() bool {
 	_, err := exec.LookPath("gh")
 	return err == nil
+}
+
+// Open the PR for the given branch.
+// Reference: https://cli.github.com/manual/gh_pr_view
+func OpenPR(branch string) error {
+	return executeAndStream("gh", "pr", "view", branch, "--web")
 }
