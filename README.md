@@ -19,3 +19,8 @@ Software Development Workflow CLI
 ## Commands
 
 ## Development
+
+Add a new command
+
+        cobra add <COMMAND_NAME>
+      
