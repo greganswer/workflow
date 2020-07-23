@@ -1,14 +1,13 @@
 package jira
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"path"
 	"time"
-
-	"github.com/fatih/color"
 )
 
 // Config keys.
@@ -69,11 +68,6 @@ type Error struct {
 	Messages []string `json:"errorMessages"`
 }
 
-// TODO: REMOVE ME
-func todo(message string) {
-	fmt.Println(color.YellowString("TODO:"), fmt.Sprintf("Implement jira.%s", message))
-}
-
 // GetIssue returns the JSON representation of a Jira issue.
 // It does this by making an HTTP request to the issue tracker API.
 // Reference: https://stackoverflow.com/questions/12864302
@@ -106,12 +100,47 @@ func GetIssue(issueID string, c *Config) (Issue, error) {
 	return i, err
 }
 
+// TransitionIssueToInProgress updates the status of the issue on Jira.
 // Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-rest-api-3-issue-issueIdOrKey-transitions-post
 func TransitionIssueToInProgress(issueID string, c *Config) error {
 	// TODO: Set status.name to "In Progress"
-	// TODO: Set assignee to c.Username
 	fmt.Printf("Transitioning Jira issue %s to 'In Progress'...\n", issueID)
-	todo("TransitionIssueToInProgress")
+
+	body, err := json.Marshal(map[string]map[string]interface{}{
+		"fields": {
+			"id": "4",
+		},
+		"transition": {
+			"assignee": map[string]string{
+				"email": c.Username,
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	u := joinURLPath(c.APIURL, APIIssuePath, issueID, "transitions")
+	request, err := http.NewRequest("POST", u, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	request.Header.Set("Content-type", "application/json")
+	request.SetBasicAuth(c.Username, c.Token)
+	res, err := httpClient.Do(request)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		var e Error
+		if err = json.NewDecoder(res.Body).Decode(&e); err != nil {
+			return err
+		}
+		return fmt.Errorf("%s: %s", res.Status, e.Messages)
+	}
 	return nil
 }
 
