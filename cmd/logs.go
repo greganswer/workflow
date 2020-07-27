@@ -21,9 +21,10 @@ var logsCmd = &cobra.Command{
 
 func runLogsCmd(_ *cobra.Command, _ []string) {
 	branch, err := git.CurrentBranch()
+	branchInLowercase := strings.ToLower(branch)
 	failIfError(err)
 
-	words := strings.Split(branch, "-")
+	words := strings.Split(branchInLowercase, "-")
 	backslashes := strings.Join(words, "\\-")
 
 	base := "https://app.datadoghq.com/logs"
