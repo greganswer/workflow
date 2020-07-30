@@ -25,6 +25,12 @@ const (
 	WebIssuePath       = "/browse"
 )
 
+// Issue Statuses.
+const (
+	CodeReviewStatusID = 501
+	InProgressStatusID = 491
+)
+
 var httpClient = &http.Client{Timeout: 10 * time.Second}
 
 // Config contains Jira configuration values.
@@ -100,20 +106,14 @@ func GetIssue(issueID string, c *Config) (Issue, error) {
 	return i, err
 }
 
-// TransitionIssueToInProgress updates the status of the issue on Jira.
+// TransitionToInProgress updates the status of the issue on Jira.
 // Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-rest-api-3-issue-issueIdOrKey-transitions-post
-func TransitionIssueToInProgress(issueID string, c *Config) error {
-	// TODO: Set status.name to "In Progress"
+func TransitionToInProgress(issueID string, c *Config) error {
 	fmt.Printf("Transitioning Jira issue %s to 'In Progress'...\n", issueID)
 
 	body, err := json.Marshal(map[string]map[string]interface{}{
-		"fields": {
-			"id": "4",
-		},
 		"transition": {
-			"assignee": map[string]string{
-				"email": c.Username,
-			},
+			"id": CodeReviewStatusID,
 		},
 	})
 	if err != nil {

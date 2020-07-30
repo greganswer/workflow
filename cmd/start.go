@@ -54,7 +54,7 @@ func runStartCmd(cmd *cobra.Command, args []string) {
 	failIfError(git.Checkout(baseBranch))
 	failIfError(git.Pull())
 	failIfError(git.CreateBranch(issue.BranchName()))
-	failIfError(jira.TransitionIssueToInProgress(issue.ID, config.Jira))
+	failIfError(jira.TransitionToInProgress(issue.ID, config.Jira))
 }
 
 // displayIssueAndBranchInfo in a nicely formatted way.
