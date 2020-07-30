@@ -71,6 +71,7 @@ func displayIssueInfo(i issues.Issue) {
 	fmt.Println(cyan("    ID:"), i.ID)
 	fmt.Println(cyan("    Title:"), i.Title)
 	fmt.Println(cyan("    Type:"), i.Type)
+	fmt.Println(cyan("    Status:"), i.Status)
 	fmt.Println(cyan("    Project:"), projectName)
 	fmt.Println()
 }

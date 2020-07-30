@@ -18,6 +18,7 @@ type Issue struct {
 	ID     string
 	Title  string
 	Type   string
+	Status string
 	APIURL string
 	WebURL string
 }
@@ -34,6 +35,7 @@ func NewFromJira(issueID string, c *jira.Config) (Issue, error) {
 		ID:     i.Key,
 		Title:  i.Fields.Summary,
 		Type:   i.Fields.IssueType.Name,
+		Status: i.Fields.Status.Name,
 		APIURL: i.Self,
 		WebURL: joinURLPath(c.WebURL, jira.WebIssuePath, issueID),
 	}, nil
