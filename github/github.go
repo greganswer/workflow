@@ -18,7 +18,6 @@ var PRBodyTemplatePath = path.Join(git.RootDir(), ".github", "PULL_REQUEST_TEMPL
 
 // PullRequest contains GitHub Pull Request data.
 type PullRequest struct {
-	Assignee  string
 	Reviewers string
 	Base      string
 	Body      string
@@ -27,7 +26,7 @@ type PullRequest struct {
 }
 
 // NewPr create the Pull Request data structure ready to create a PR on GitHub.
-func NewPr(issue issues.Issue, baseBranch, assignee, reviewers string) (PullRequest, error) {
+func NewPr(issue issues.Issue, baseBranch, reviewers string) (PullRequest, error) {
 	template := "None"
 	body := fmt.Sprintf("## [Issue #%s](%s)\n\n", issue.ID, issue.WebURL)
 
@@ -45,7 +44,6 @@ func NewPr(issue issues.Issue, baseBranch, assignee, reviewers string) (PullRequ
 		Base:      baseBranch,
 		Template:  template,
 		Body:      body,
-		Assignee:  assignee,
 		Reviewers: reviewers,
 	}, err
 }
@@ -59,7 +57,6 @@ func (p *PullRequest) Create() error {
 		"--base", p.Base,
 		"--title", p.Title,
 		"--body", p.Body,
-		"--assignee", p.Assignee,
 		"--reviewer", p.Reviewers,
 	)
 }
