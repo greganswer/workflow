@@ -10,6 +10,7 @@ import (
 	"github.com/greganswer/workflow/git"
 	"github.com/greganswer/workflow/github"
 	"github.com/greganswer/workflow/issues"
+	"github.com/greganswer/workflow/jira"
 )
 
 // prCmd represents the pr command
@@ -58,6 +59,7 @@ func runPrCmd(cmd *cobra.Command, _ []string) {
 
 	failIfError(pr.Create())
 	failIfError(github.OpenPR(branch))
+	failIfError(jira.TransitionToCodeReview(issue.ID, config.Jira))
 }
 
 // displayIssueAndPRInfo in a nicely formatted way.

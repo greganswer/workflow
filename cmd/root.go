@@ -16,7 +16,7 @@ var config = &Config{}
 // rootCmd represents the base command when called without any sub commands.
 var rootCmd = &cobra.Command{
 	Use:              "workflow",
-	Version:          "0.10.0",
+	Version:          "0.11.0",
 	Short:            "Automate software development workflows using the command line",
 	PersistentPreRun: persistentPreRun,
 }
@@ -26,6 +26,7 @@ func persistentPreRun(*cobra.Command, []string) {
 	// TODO: Find a better place to initialize this.
 	config.Jira.APIURL = os.Getenv("WORKFLOW_ISSUE_API_URL")
 	config.Jira.WebURL = os.Getenv("WORKFLOW_ISSUE_API_URL")
+	config.Jira.AccountID = os.Getenv("JIRA_ACCOUNT_ID")
 	if git.RootDir() == "" {
 		failIfError(git.NotInitializedErr)
 	}
