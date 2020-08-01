@@ -6,7 +6,10 @@ import (
 	"strings"
 )
 
+// RepoIsDirtyErr is raised if the repository has unstaged changes.
 var RepoIsDirtyErr = fmt.Errorf("repository has unstaged changes")
+
+// NotInitializedErr is raised if the repository has not been initialized.
 var NotInitializedErr = fmt.Errorf("git repository has not been initialized")
 
 // Checkout branch by name.
@@ -25,7 +28,7 @@ func CurrentBranch() (string, error) {
 	return strings.Trim(string(out), "\n"), err
 }
 
-// DirIsClean returns false if there are changes in the repo.
+// RepoIsClean returns false if there are changes in the repo.
 func RepoIsClean() bool {
 	return exec.Command("git", "diff", "--exit-code").Run() == nil
 }
@@ -43,18 +46,18 @@ func Pull() error {
 }
 
 // Remote gets the remote project info.
-func Remote() (string, error) {
+func remote() (string, error) {
 	out, err := exec.Command("git", "remote", "-v").Output()
 	return strings.Trim(string(out), "\n"), err
 }
 
 // ProjectName extracts the project name from the remote info.
 func ProjectName() (string, error) {
-	out, err := Remote()
+	out, err := remote()
 	if err != nil {
 		return "", nil
 	}
-	a := strings.Split(string(out), "/")
+	a := strings.Split(out, "/")
 	b := a[len(a)-2:]
 	c := strings.Join(b, "/")
 	d := strings.Split(c, "\n")

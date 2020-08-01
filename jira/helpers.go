@@ -10,13 +10,54 @@ import (
 	"time"
 )
 
+// Config keys.
+const (
+	UsernameConfigKey = "jira.username"
+	TokenConfigKey    = "jira.token"
+	APIConfigKey      = "jira.api_url"
+	WebConfigKey      = "jira.api_url"
+)
+
+// URLs.
+const (
+	APIInstructionsURL = "https://confluence.atlassian.com/cloud/api-tokens-938839638.html"
+	APIIssuePath       = "/rest/api/3/issue"
+	APIUserPath        = "/rest/api/3/user"
+	WebIssuePath       = "/browse"
+)
+
+var httpClient *http.Client
+
+const (
+	maxIdleConnections int = 20
+	requestTimeout     int = 5
+)
+
+func init() {
+	httpClient = createHTTPClient()
+}
+
+// Config contains Jira configuration values.
+type Config struct {
+	Username  string
+	AccountID string
+	Token     string
+	APIURL    string
+	WebURL    string
+}
+
+// errorResponse is the data structure for an error response from Jira's JSON API.
+type errorResponse struct {
+	Messages []string `json:"errorMessages"`
+}
+
 // createHTTPClient for connection re-use
 func createHTTPClient() *http.Client {
 	client := &http.Client{
 		Transport: &http.Transport{
-			MaxIdleConnsPerHost: MaxIdleConnections,
+			MaxIdleConnsPerHost: maxIdleConnections,
 		},
-		Timeout: time.Duration(RequestTimeout) * time.Second,
+		Timeout: time.Duration(requestTimeout) * time.Second,
 	}
 
 	return client

@@ -3,15 +3,23 @@ package jira
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/greganswer/workflow/issues"
+)
+
+// Transition names.
+const (
+	inProgress = "In Progress"
+	codeReview = "Code Review"
 )
 
 // Transitions is the data model for the transition API response.
-type Transitions struct {
-	Transitions []Transition `json:"transitions"`
+type transitions struct {
+	Transitions []transition `json:"transitions"`
 }
 
 // Transition is the data model for Jira ticket statuses.
-type Transition struct {
+type transition struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
@@ -19,10 +27,9 @@ type Transition struct {
 // findByName searches a slice of transitions by name.
 // Time: O(n) - Iterate over Transitions
 // Space: O(1)
-func (t *Transitions) findByName(name string) (*Transition, error) {
+func (t *transitions) findByName(name string) (*transition, error) {
 	for i := range t.Transitions {
 		if t.Transitions[i].Name == name {
-			fmt.Printf("Found '%s' transition\n", name)
 			return &t.Transitions[i], nil
 		}
 	}
@@ -30,19 +37,24 @@ func (t *Transitions) findByName(name string) (*Transition, error) {
 }
 
 // TransitionToInProgress updates the status Jira issue to "In Progress".
-func TransitionToInProgress(issueID string, c *Config) error {
-	return transitionIssue("In Progress", issueID, c)
+func TransitionToInProgress(issue issues.Issue, c *Config) error {
+	return transitionIssue(inProgress, issue, c)
 }
 
 // TransitionToCodeReview updates the status Jira issue to "Code Review".
-func TransitionToCodeReview(issueID string, c *Config) error {
-	return transitionIssue("Code Review", issueID, c)
+func TransitionToCodeReview(issue issues.Issue, c *Config) error {
+	return transitionIssue(codeReview, issue, c)
 }
 
-func transitionIssue(name, issueID string, c *Config) error {
-	fmt.Printf("Transitioning Jira issue %s to '%s' status...\n", issueID, name)
+func transitionIssue(name string, issue issues.Issue, c *Config) error {
+	if issue.Status == name {
+		fmt.Printf("Jira issue %s status already set to '%s'\n", issue.ID, name)
+		return nil
+	}
 
-	t, err := getTransitionByName(name, issueID, c)
+	fmt.Printf("Transitioning Jira issue %s to '%s' status...\n", issue.ID, name)
+
+	t, err := getTransitionByName(name, issue.ID, c)
 	if err != nil {
 		return err
 	}
@@ -56,8 +68,8 @@ func transitionIssue(name, issueID string, c *Config) error {
 		return err
 	}
 
-	u := joinURLPath(c.APIURL, APIIssuePath, issueID, "transitions")
-	res, err := makeRequest("POST", u, reqBody, c)
+	URL := joinURLPath(c.APIURL, APIIssuePath, issue.ID, "transitions")
+	res, err := makeRequest("POST", URL, reqBody, c)
 	if err != nil {
 		return err
 	}
@@ -74,17 +86,16 @@ func transitionIssue(name, issueID string, c *Config) error {
 		// }
 		// return fmt.Errorf("%s: %s", res.Status, e.Messages)
 		return fmt.Errorf("%s: %s", res.Status, resBody)
-
 	}
 
 	return nil
 }
-func getTransitions(issueID string, c *Config) (Transitions, error) {
+func getTransitions(issueID string, c *Config) (transitions, error) {
 	fmt.Printf("Retrieving transitions for %s Jira issue...\n", issueID)
 
-	var ts Transitions
-	u := joinURLPath(c.APIURL, APIIssuePath, issueID, "transitions")
-	res, err := makeRequest("GET", u, nil, c)
+	var ts transitions
+	URL := joinURLPath(c.APIURL, APIIssuePath, issueID, "transitions")
+	res, err := makeRequest("GET", URL, nil, c)
 	if err != nil {
 		return ts, err
 	}
@@ -92,7 +103,7 @@ func getTransitions(issueID string, c *Config) (Transitions, error) {
 	defer res.Body.Close()
 
 	if !statusSuccess(res) {
-		var e Error
+		var e errorResponse
 		if err = json.NewDecoder(res.Body).Decode(&e); err != nil {
 			return ts, err
 		}
@@ -105,15 +116,11 @@ func getTransitions(issueID string, c *Config) (Transitions, error) {
 	return ts, err
 }
 
-func getTransitionByName(name string, issueID string, c *Config) (*Transition, error) {
+func getTransitionByName(name string, issueID string, c *Config) (*transition, error) {
 	ts, err := getTransitions(issueID, c)
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := ts.findByName(name)
-	if err != nil {
-		return nil, err
-	}
-	return t, nil
+	return ts.findByName(name)
 }

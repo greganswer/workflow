@@ -11,13 +11,16 @@ import (
 	"github.com/greganswer/workflow/jira"
 )
 
-type Config struct {
+// configData contains Viper configuration values for different levels of configuration
+// (Global, Local, Jira, etc.)
+type configData struct {
 	Global *viper.Viper
 	Local  *viper.Viper
 	Jira   *jira.Config
 }
 
-type Setting struct {
+// Setting is an individual setting that can be store in a config.
+type setting struct {
 	Parent         *viper.Viper
 	Key            string
 	Description    string
@@ -26,7 +29,7 @@ type Setting struct {
 }
 
 // init initialize the configs and validates required values.
-func (c *Config) init() {
+func (c *configData) init() {
 	const filename = ".workflow.yml"
 
 	c.Global = viper.New()
@@ -43,7 +46,7 @@ func (c *Config) init() {
 	// TODO: configs := []*viper.Viper{c.Local, c.Global}
 	configs := []*viper.Viper{c.Global}
 	for _, v := range configs {
-		file.Touch(v.ConfigFileUsed())
+		_, _ = file.Touch(v.ConfigFileUsed())
 		failIfError(v.ReadInConfig())
 	}
 
@@ -53,7 +56,7 @@ func (c *Config) init() {
 }
 
 // validate each required setting in the configs.
-func (c *Config) validate() error {
+func (c *configData) validate() error {
 	for _, s := range c.settings() {
 		value := s.Parent.GetString(s.Key)
 		if value == "" {
@@ -75,8 +78,8 @@ func (c *Config) validate() error {
 }
 
 // settings contains the list of Setting data.
-func (c *Config) settings() []Setting {
-	return []Setting{
+func (c *configData) settings() []setting {
+	return []setting{
 		{
 			Parent:         c.Global,
 			Key:            jira.UsernameConfigKey,
@@ -106,7 +109,7 @@ func (c *Config) settings() []Setting {
 }
 
 // update the config files.
-func (c *Config) update() error {
+func (c *configData) update() error {
 	if err := c.Global.WriteConfig(); err != nil {
 		return err
 	}
@@ -115,7 +118,7 @@ func (c *Config) update() error {
 }
 
 // initJira from global and local configs.
-func (c *Config) initJira() {
+func (c *configData) initJira() {
 	c.Jira = &jira.Config{
 		Username: c.Global.GetString(jira.UsernameConfigKey),
 		Token:    c.Global.GetString(jira.TokenConfigKey),

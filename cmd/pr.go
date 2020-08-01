@@ -43,7 +43,8 @@ func runPrCmd(cmd *cobra.Command, _ []string) {
 	branch, err := git.CurrentBranch()
 	failIfError(err)
 
-	issue, err := issues.NewFromBranch(branch, config.Jira)
+	ID := issues.ParseIDFromBranch(branch)
+	issue, err := jira.GetIssue(ID, config.Jira)
 	failIfError(err)
 
 	baseBranch, _ := cmd.Flags().GetString("base")
@@ -59,7 +60,7 @@ func runPrCmd(cmd *cobra.Command, _ []string) {
 
 	failIfError(pr.Create())
 	failIfError(github.OpenPR(branch))
-	failIfError(jira.TransitionToCodeReview(issue.ID, config.Jira))
+	failIfError(jira.TransitionToCodeReview(issue, config.Jira))
 }
 
 // displayIssueAndPRInfo in a nicely formatted way.

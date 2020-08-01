@@ -14,7 +14,7 @@ import (
 const CLIInstallationInstructions = "https://cli.github.com"
 const UsernameConfigKey = "github.username"
 
-var PRBodyTemplatePath = path.Join(git.RootDir(), ".github", "PULL_REQUEST_TEMPLATE.md")
+var pRBodyTemplatePath = path.Join(git.RootDir(), ".github", "PULL_REQUEST_TEMPLATE.md")
 
 // PullRequest contains GitHub Pull Request data.
 type PullRequest struct {
@@ -30,11 +30,11 @@ func NewPr(issue issues.Issue, baseBranch, reviewers string) (PullRequest, error
 	template := "None"
 	body := fmt.Sprintf("## [Issue #%s](%s)\n\n", issue.ID, issue.WebURL)
 
-	exists, err := file.Exists(PRBodyTemplatePath)
+	exists, err := file.Exists(pRBodyTemplatePath)
 	if exists {
-		b, err := ioutil.ReadFile(PRBodyTemplatePath)
+		b, err := ioutil.ReadFile(pRBodyTemplatePath)
 		if err == nil {
-			template = PRBodyTemplatePath
+			template = pRBodyTemplatePath
 			body += string(b)
 		}
 	}
@@ -67,7 +67,7 @@ func CLIExists() bool {
 	return err == nil
 }
 
-// Open the PR for the given branch.
+// OpenPR opens the PR for the given branch.
 // Reference: https://cli.github.com/manual/gh_pr_view
 func OpenPR(branch string) error {
 	return executeAndStream("gh", "pr", "view", branch, "--web")

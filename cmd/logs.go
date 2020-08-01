@@ -36,7 +36,7 @@ func runLogsCmd(_ *cobra.Command, _ []string) {
 	q.Add("query", fmt.Sprintf("container_name:*%s*", backslashes))
 	u.RawQuery = q.Encode()
 
-	browser.OpenURL(u.String())
+	failIfError(browser.OpenURL(u.String()))
 }
 
 func init() {

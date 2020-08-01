@@ -42,7 +42,7 @@ func preRunStartCmd(cmd *cobra.Command, _ []string) {
 
 func runStartCmd(cmd *cobra.Command, args []string) {
 	id := args[0]
-	issue, err := issues.NewFromJira(id, config.Jira)
+	issue, err := jira.GetIssue(id, config.Jira)
 	failIfError(err)
 
 	baseBranch, _ := cmd.Flags().GetString("base")
@@ -54,8 +54,8 @@ func runStartCmd(cmd *cobra.Command, args []string) {
 	failIfError(git.Checkout(baseBranch))
 	failIfError(git.Pull())
 	failIfError(git.CreateBranch(issue.BranchName()))
-	failIfError(jira.TransitionToInProgress(issue.ID, config.Jira))
-	failIfError(jira.AssignUser(config.Jira.AccountID, issue.ID, config.Jira))
+	failIfError(jira.TransitionToInProgress(issue, config.Jira))
+	failIfError(jira.AssignUser(config.Jira.AccountID, issue, config.Jira))
 }
 
 // displayIssueAndBranchInfo in a nicely formatted way.
