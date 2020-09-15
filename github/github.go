@@ -23,10 +23,11 @@ type PullRequest struct {
 	Body      string
 	Title     string
 	Template  string
+	Draft     bool
 }
 
 // NewPr create the Pull Request data structure ready to create a PR on GitHub.
-func NewPr(issue issues.Issue, baseBranch, reviewers string) (PullRequest, error) {
+func NewPr(issue issues.Issue, baseBranch, reviewers string, draft bool) (PullRequest, error) {
 	template := "None"
 	body := fmt.Sprintf("## [Issue #%s](%s)\n\n", issue.ID, issue.WebURL)
 
@@ -45,6 +46,7 @@ func NewPr(issue issues.Issue, baseBranch, reviewers string) (PullRequest, error
 		Template:  template,
 		Body:      body,
 		Reviewers: reviewers,
+		Draft:     draft,
 	}, err
 }
 
@@ -52,6 +54,16 @@ func NewPr(issue issues.Issue, baseBranch, reviewers string) (PullRequest, error
 // Reference: https://cli.github.com/manual/gh_pr_create
 func (p *PullRequest) Create() error {
 	fmt.Println("Creating Pull Request on GitHub...")
+
+	if p.Draft {
+		return executeAndStream("gh", "pr", "create",
+			"--base", p.Base,
+			"--title", p.Title,
+			"--body", p.Body,
+			"--reviewer", p.Reviewers,
+			"--draft",
+		)
+	}
 
 	return executeAndStream("gh", "pr", "create",
 		"--base", p.Base,

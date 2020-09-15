@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
 	"github.com/greganswer/workflow/git"
@@ -13,19 +12,19 @@ import (
 	"github.com/greganswer/workflow/jira"
 )
 
-// prCmd represents the pr command
-var prCmd = &cobra.Command{
-	Use:    "pr",
-	Short:  "Create a GitHub Pull Request for the specified branch.",
-	PreRun: preRunPrCmd,
-	Run:    runPrCmd,
+// draftCmd represents the pr command
+var draftCmd = &cobra.Command{
+	Use:    "draft",
+	Short:  "Create a draft GitHub Pull Request for the specified branch.",
+	PreRun: preRunDraftCmd,
+	Run:    runDraftCmd,
 }
 
 func init() {
-	rootCmd.AddCommand(prCmd)
+	rootCmd.AddCommand(draftCmd)
 }
 
-func preRunPrCmd(cmd *cobra.Command, _ []string) {
+func preRunDraftCmd(cmd *cobra.Command, _ []string) {
 	force, _ := cmd.Flags().GetBool("force")
 	if !force && !git.RepoIsClean() {
 		failIfError(git.RepoIsDirtyErr)
@@ -39,11 +38,10 @@ func preRunPrCmd(cmd *cobra.Command, _ []string) {
 	}
 }
 
-// TODO: Add a draft flag and replace the contents of runDraftCmd
 // TODO: Handle uncommitted changes
 //		1. Prompt user to use Issue Title or a custom one
 //		2. Create a commit with the Issue title
-func runPrCmd(cmd *cobra.Command, _ []string) {
+func runDraftCmd(cmd *cobra.Command, _ []string) {
 	branch, err := git.CurrentBranch()
 	failIfError(err)
 
@@ -53,7 +51,7 @@ func runPrCmd(cmd *cobra.Command, _ []string) {
 
 	baseBranch, _ := cmd.Flags().GetString("base")
 	reviewers := os.Getenv("WORKFLOW_PR_REVIEWERS")
-	pr, err := github.NewPr(issue, baseBranch, reviewers, false)
+	pr, err := github.NewPr(issue, baseBranch, reviewers, true)
 	warnIfError(err)
 
 	displayIssueAndPRInfo(issue, pr)
@@ -65,20 +63,4 @@ func runPrCmd(cmd *cobra.Command, _ []string) {
 	failIfError(pr.Create())
 	failIfError(github.OpenPR(branch))
 	failIfError(jira.TransitionToCodeReview(issue, config.Jira))
-}
-
-// displayIssueAndPRInfo in a nicely formatted way.
-func displayIssueAndPRInfo(i issues.Issue, pr github.PullRequest) {
-	cyan := color.New(color.FgHiCyan).SprintFunc()
-	fmt.Println()
-	displayIssueInfo(i)
-
-	title("  Pull request:")
-	fmt.Println(cyan("    Title:"), pr.Title)
-	fmt.Println(cyan("    Base:"), pr.Base)
-	fmt.Println(cyan("    Reviewers:"), pr.Reviewers)
-	fmt.Println(cyan("    Template:"), pr.Template)
-	fmt.Println(cyan("    Draft:"), pr.Draft)
-
-	fmt.Println()
 }
