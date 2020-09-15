@@ -41,8 +41,9 @@ func (i Issue) BranchName() string {
 	id = reTrim.ReplaceAllString(id, "")
 
 	branch := strings.Join([]string{i.branchPrefix() + id, title}, "-")
+	shortName := fmt.Sprintf(branchNameMaxLength, strings.ToLower(branch))
 
-	return fmt.Sprintf(branchNameMaxLength, strings.ToLower(branch))
+	return strings.TrimSuffix(shortName, "-")
 }
 
 // BranchPrefix returns the Git flow branch prefixes based on the Issue type.
