@@ -3,6 +3,7 @@ package jira
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/greganswer/workflow/issues"
 )
@@ -49,14 +50,14 @@ func GetIssue(issueID string, c *Config) (issues.Issue, error) {
 	if !statusSuccess(res) {
 		var e errorResponse
 		if err = json.NewDecoder(res.Body).Decode(&e); err != nil {
-			return i, err
+			log.Fatalln(err)
 		}
 		return i, fmt.Errorf("%s: %s", res.Status, e.Messages)
 	}
 
 	var data issueResponse
 	if err = json.NewDecoder(res.Body).Decode(&data); err != nil {
-		return i, err
+		log.Fatalln(err)
 	}
 
 	return issues.Issue{

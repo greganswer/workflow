@@ -3,6 +3,7 @@ package jira
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/greganswer/workflow/issues"
 )
@@ -65,7 +66,7 @@ func transitionIssue(name string, issue issues.Issue, c *Config) error {
 		},
 	})
 	if err != nil {
-		return err
+		log.Fatalln(err)
 	}
 
 	URL := joinURLPath(c.APIURL, APIIssuePath, issue.ID, "transitions")
@@ -90,6 +91,7 @@ func transitionIssue(name string, issue issues.Issue, c *Config) error {
 
 	return nil
 }
+
 func getTransitions(issueID string, c *Config) (transitions, error) {
 	fmt.Printf("Retrieving transitions for %s Jira issue...\n", issueID)
 
@@ -97,7 +99,7 @@ func getTransitions(issueID string, c *Config) (transitions, error) {
 	URL := joinURLPath(c.APIURL, APIIssuePath, issueID, "transitions")
 	res, err := makeRequest("GET", URL, nil, c)
 	if err != nil {
-		return ts, err
+		log.Fatalln(err)
 	}
 	// TODO: Try to use readBody() instead
 	defer res.Body.Close()
@@ -105,10 +107,10 @@ func getTransitions(issueID string, c *Config) (transitions, error) {
 	if !statusSuccess(res) {
 		var e errorResponse
 		if err = json.NewDecoder(res.Body).Decode(&e); err != nil {
-			return ts, err
+			log.Fatalln(err)
 		}
 		err = fmt.Errorf("%s: %s", res.Status, e.Messages)
-		return ts, err
+		log.Fatalln(err)
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&ts)
@@ -119,7 +121,7 @@ func getTransitions(issueID string, c *Config) (transitions, error) {
 func getTransitionByName(name string, issueID string, c *Config) (*transition, error) {
 	ts, err := getTransitions(issueID, c)
 	if err != nil {
-		return nil, err
+		log.Fatalln(err)
 	}
 
 	return ts.findByName(name)

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const branchNameMaxLength = "%.50s"
+const branchNameMaxLength = "%.40s"
 
 // Issue contains the issue information.
 type Issue struct {

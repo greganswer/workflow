@@ -3,6 +3,7 @@ package jira
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/greganswer/workflow/issues"
 )
@@ -34,7 +35,7 @@ func AssignUser(accountID string, issue issues.Issue, c *Config) error {
 
 	reqBody, err := json.Marshal(map[string]string{"accountId": u.ID})
 	if err != nil {
-		return err
+		log.Fatalln(err)
 	}
 
 	URL := joinURLPath(c.APIURL, APIIssuePath, issue.ID, "assignee")
@@ -62,14 +63,14 @@ func findUserByID(ID string, c *Config) (user, error) {
 	URL := joinURLPath(c.APIURL, APIUserPath, ID)
 	res, err := makeRequest("GET", URL, nil, c)
 	if err != nil {
-		return u, err
+		log.Fatalln(err)
 	}
 	defer res.Body.Close()
 
 	if !statusSuccess(res) {
 		var e errorResponse
 		if err = json.NewDecoder(res.Body).Decode(&e); err != nil {
-			return u, err
+			log.Fatalln(err)
 		}
 		return u, fmt.Errorf("%s: %s", res.Status, e.Messages)
 	}

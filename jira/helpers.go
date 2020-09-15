@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -34,6 +35,9 @@ const (
 )
 
 func init() {
+	// Enable line numbers in logging
+	log.SetFlags(log.Ltime | log.Llongfile)
+
 	httpClient = createHTTPClient()
 }
 
@@ -66,7 +70,7 @@ func createHTTPClient() *http.Client {
 func makeRequest(method, u string, reqBody []byte, c *Config) (*http.Response, error) {
 	req, err := http.NewRequest(method, u, bytes.NewBuffer(reqBody))
 	if err != nil {
-		return nil, err
+		log.Fatalln(err)
 	}
 
 	req.Header.Set("Content-type", "application/json")
@@ -84,7 +88,7 @@ func readBody(readCloser io.ReadCloser) ([]byte, error) {
 	defer readCloser.Close()
 	body, err := ioutil.ReadAll(readCloser)
 	if err != nil {
-		return nil, err
+		log.Fatalln(err)
 	}
 	return body, nil
 }

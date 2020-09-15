@@ -39,6 +39,9 @@ func preRunPrCmd(cmd *cobra.Command, _ []string) {
 	}
 }
 
+// TODO: Handle uncommitted changes
+//		1. Prompt user to use Issue Title or a custom one
+//		2. Create a commit with the Issue title
 func runPrCmd(cmd *cobra.Command, _ []string) {
 	branch, err := git.CurrentBranch()
 	failIfError(err)
