@@ -62,5 +62,4 @@ func runDraftCmd(cmd *cobra.Command, _ []string) {
 
 	failIfError(pr.Create())
 	failIfError(github.OpenPR(branch))
-	failIfError(jira.TransitionToCodeReview(issue, config.Jira))
 }
