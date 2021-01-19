@@ -79,7 +79,7 @@ func makeRequest(method, u string, reqBody []byte, c *Config) (*http.Response, e
 }
 
 func statusSuccess(res *http.Response) bool {
-	return (res.StatusCode >= 200) || (res.StatusCode < 400)
+	return res.StatusCode >= 200 && res.StatusCode < 400
 }
 
 // Read the body of the response to force the connection to close.
