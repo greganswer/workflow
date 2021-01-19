@@ -16,7 +16,7 @@ var config = &configData{}
 // rootCmd represents the base command when called without any sub commands.
 var rootCmd = &cobra.Command{
 	Use:              "workflow",
-	Version:          "0.17.0",
+	Version:          "0.17.1",
 	Short:            "Automate software development workflows using the command line",
 	PersistentPreRun: persistentPreRun,
 }

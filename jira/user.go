@@ -3,6 +3,7 @@ package jira
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/pkg/errors"
 
@@ -61,7 +62,16 @@ func findUserByID(ID string, c *Config) (user, error) {
 	fmt.Printf("Retrieving user by ID %s...\n", ID)
 
 	var u user
-	URL := joinURLPath(c.APIURL, APIUserPath, ID)
+	p, err := url.Parse(fmt.Sprintf("%s/%s", c.APIURL, APIUserPath))
+	if err != nil {
+		return u, errors.Wrap(err, "URL parse failed")
+	}
+	q := p.Query()
+	// TODO: This is specific to JIRA and should be abstracted somehow.
+	q.Set("accountId", ID)
+	p.RawQuery = q.Encode()
+	URL := p.String()
+
 	res, err := makeRequest("GET", URL, nil, c)
 	if err != nil {
 		return u, errors.Wrap(err, "makeRequest failed")

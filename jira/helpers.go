@@ -2,6 +2,7 @@ package jira
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -70,12 +71,15 @@ func createHTTPClient() *http.Client {
 }
 
 func makeRequest(method, u string, reqBody []byte, c *Config) (*http.Response, error) {
+	fmt.Printf("makeRequest to : %s...\n", u)
+
 	req, err := http.NewRequest(method, u, bytes.NewBuffer(reqBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "request failed")
 	}
 
 	req.Header.Set("Content-type", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.SetBasicAuth(c.Username, c.Token)
 	return httpClient.Do(req)
 }
