@@ -3,7 +3,8 @@ package jira
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
+	"github.com/pkg/errors"
 
 	"github.com/greganswer/workflow/issues"
 )
@@ -23,7 +24,7 @@ func (a user) String() string {
 func AssignUser(accountID string, issue issues.Issue, c *Config) error {
 	u, err := findUserByID(accountID, c)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "findUserByID failed")
 	}
 
 	if issue.Assignee == u.Name {
@@ -35,18 +36,18 @@ func AssignUser(accountID string, issue issues.Issue, c *Config) error {
 
 	reqBody, err := json.Marshal(map[string]string{"accountId": u.ID})
 	if err != nil {
-		log.Fatalln(err)
+		return errors.Wrap(err, "JSON marshal failed")
 	}
 
 	URL := joinURLPath(c.APIURL, APIIssuePath, issue.ID, "assignee")
 	res, err := makeRequest("PUT", URL, reqBody, c)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "makeRequest failed")
 	}
 
 	_, err = readBody(res.Body)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "read failed")
 	}
 
 	if !statusSuccess(res) {
@@ -63,14 +64,14 @@ func findUserByID(ID string, c *Config) (user, error) {
 	URL := joinURLPath(c.APIURL, APIUserPath, ID)
 	res, err := makeRequest("GET", URL, nil, c)
 	if err != nil {
-		log.Fatalln(err)
+		return u, errors.Wrap(err, "makeRequest failed")
 	}
 	defer res.Body.Close()
 
 	if !statusSuccess(res) {
 		var e errorResponse
 		if err = json.NewDecoder(res.Body).Decode(&e); err != nil {
-			log.Fatalln(err)
+			return u, errors.Wrap(err, "decode failed")
 		}
 		return u, fmt.Errorf("%s: %s", res.Status, e.Messages)
 	}

@@ -3,7 +3,9 @@ package jira
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"net/http"
+
+	"github.com/pkg/errors"
 
 	"github.com/greganswer/workflow/issues"
 )
@@ -57,27 +59,22 @@ func transitionIssue(name string, issue issues.Issue, c *Config) error {
 
 	t, err := getTransitionByName(name, issue.ID, c)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getTransitionByName failed")
 	}
 
-	reqBody, err := json.Marshal(map[string]map[string]interface{}{
-		"transition": {
-			"id": t.ID,
-		},
-	})
+	reqBody, err := json.Marshal(map[string]map[string]interface{}{"transition": {"id": t.ID}})
 	if err != nil {
-		log.Fatalln(err)
+		return errors.Wrap(err, "JSON marshal failed")
 	}
 
-	URL := joinURLPath(c.APIURL, APIIssuePath, issue.ID, "transitions")
-	res, err := makeRequest("POST", URL, reqBody, c)
+	res, err := makeTransitionRequest(c, issue, reqBody)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "makeTransitionRequest failed")
 	}
 
 	resBody, err := readBody(res.Body)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "read failed")
 	}
 
 	if !statusSuccess(res) {
@@ -86,7 +83,7 @@ func transitionIssue(name string, issue issues.Issue, c *Config) error {
 		// 	return err
 		// }
 		// return fmt.Errorf("%s: %s", res.Status, e.Messages)
-		return fmt.Errorf("%s: %s", res.Status, resBody)
+		return fmt.Errorf("issue transition failed with %s status: %s", res.Status, resBody)
 	}
 
 	return nil
@@ -99,7 +96,7 @@ func getTransitions(issueID string, c *Config) (transitions, error) {
 	URL := joinURLPath(c.APIURL, APIIssuePath, issueID, "transitions")
 	res, err := makeRequest("GET", URL, nil, c)
 	if err != nil {
-		log.Fatalln(err)
+		return ts, errors.Wrap(err, "makeRequest failed")
 	}
 	// TODO: Try to use readBody() instead
 	defer res.Body.Close()
@@ -107,10 +104,10 @@ func getTransitions(issueID string, c *Config) (transitions, error) {
 	if !statusSuccess(res) {
 		var e errorResponse
 		if err = json.NewDecoder(res.Body).Decode(&e); err != nil {
-			log.Fatalln(err)
+			return ts, errors.Wrap(err, "decode failed")
 		}
 		err = fmt.Errorf("%s: %s", res.Status, e.Messages)
-		log.Fatalln(err)
+		return ts, errors.Wrap(err, "HTTP status not success")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&ts)
@@ -121,8 +118,13 @@ func getTransitions(issueID string, c *Config) (transitions, error) {
 func getTransitionByName(name string, issueID string, c *Config) (*transition, error) {
 	ts, err := getTransitions(issueID, c)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, errors.Wrap(err, "getTransitions failed")
 	}
 
 	return ts.findByName(name)
+}
+
+func makeTransitionRequest(c *Config, issue issues.Issue, reqBody []byte) (*http.Response, error) {
+	URL := joinURLPath(c.APIURL, APIIssuePath, issue.ID, "transitions")
+	return makeRequest("POST", URL, reqBody, c)
 }

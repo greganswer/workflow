@@ -3,7 +3,8 @@ package jira
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
+	"github.com/pkg/errors"
 
 	"github.com/greganswer/workflow/issues"
 )
@@ -43,21 +44,21 @@ func GetIssue(issueID string, c *Config) (issues.Issue, error) {
 	URL := joinURLPath(c.APIURL, APIIssuePath, issueID)
 	res, err := makeRequest("GET", URL, nil, c)
 	if err != nil {
-		return i, err
+		return i, errors.Wrap(err, "makeRequest failed")
 	}
 	defer res.Body.Close()
 
 	if !statusSuccess(res) {
 		var e errorResponse
 		if err = json.NewDecoder(res.Body).Decode(&e); err != nil {
-			log.Fatalln(err)
+			return i, errors.Wrap(err, "decode failed")
 		}
-		return i, fmt.Errorf("%s: %s", res.Status, e.Messages)
+		return i, fmt.Errorf("get issue failed with %s HTTP status: %s", res.Status, e.Messages)
 	}
 
 	var data issueResponse
 	if err = json.NewDecoder(res.Body).Decode(&data); err != nil {
-		log.Fatalln(err)
+		return i, errors.Wrap(err, "decode failed")
 	}
 
 	return issues.Issue{

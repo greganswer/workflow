@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"path"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 // Config keys.
@@ -70,7 +72,7 @@ func createHTTPClient() *http.Client {
 func makeRequest(method, u string, reqBody []byte, c *Config) (*http.Response, error) {
 	req, err := http.NewRequest(method, u, bytes.NewBuffer(reqBody))
 	if err != nil {
-		log.Fatalln(err)
+		return nil, errors.Wrap(err, "request failed")
 	}
 
 	req.Header.Set("Content-type", "application/json")
@@ -87,10 +89,7 @@ func statusSuccess(res *http.Response) bool {
 func readBody(readCloser io.ReadCloser) ([]byte, error) {
 	defer readCloser.Close()
 	body, err := ioutil.ReadAll(readCloser)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return body, nil
+	return body, errors.Wrap(err, "read failed")
 }
 
 func joinURLPath(base string, elem ...string) string {
